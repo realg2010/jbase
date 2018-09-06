@@ -192,6 +192,8 @@ PROCESS:
 	TOT.DEF=SMALLLN.DEFAMT+ASSETLN.DEFAMT+FESTLN.DEFAMT+INDIVLN.DEFAMT+INDIVHQLN.DEFAMT+SPRINGLN.DEFAMT+IFDCLN.DEFAMT+SMELN.DEFAMT+STAFFLN.DEFAMT+OGASLN.DEFAMT
 	TOT.DEFBAL=SMALLLN.DEFBAL+ASSETLN.DEFBAL+FESTLN.DEFBAL+INDIVLN.DEFBAL+INDIVHQLN.DEFBAL+SPRINGLN.DEFBAL+IFDCLN.DEFBAL+SMELN.DEFBAL+STAFFLN.DEFBAL+OGASLN.DEFBAL
 	TOT.DEFCNT=SMALLLN.OVD+FESTLN.OVD+INDIVLN.OVD+IFDCLN.OVD+SPRINGLN.OVD+ASSETLN.OVD+SMELN.OVD+STAFFLN.OVD+INDIVHQLN.OVD+OGASLN.OVD
+	TOT.REALIZABLE=RCHG.AMT+RPR.AMT
+	TOT.REALIZED=RPREVPR.BAL+RPREVCH.BAL
       EXECUTE 'COUNT ':FN.CO
       CO.TOT = @SYSTEM.RETURN.CODE
     HDR='<html>'
@@ -291,11 +293,11 @@ PROCESS:
 	HDR:='<tr><td>83</td><td>Balance of Defaulters (Naira) O-Gas</td><td>':FMT(OGASLN.DEFBAL,'L,'):'</td></tr>'
 	HDR:='<tr><td></td><td>Total Balance of Defaulters </td><td>':FMT(TOT.DEFBAL,'L,'):'</td></tr>'
 	HDR:='<tr><td>84</td><td>Portfolio at risk (PAR 1-30 Days)</td><td>':FMT((TOT.DEFBAL/TOT.OUTS)*100,'L2,'):'</td></tr>'
-	HDR:='<tr><td></td><td>Total Realisable/Expected</td><td>':EMP:'</td></tr>'
-	HDR:='<tr><td></td><td>Total Realised/Collected</td><td>':EMP:'</td></tr>'
-	HDR:='<tr><td></td><td>Recovery Rate</td><td>':EMP:'</td></tr>'
-	HDR:='<tr><td></td><td>Current Realisable/Expected</td><td>':EMP:'</td></tr>'
-	HDR:='<tr><td></td><td>Current Realised/Collected</td><td>':EMP:'</td></tr>'
+	HDR:='<tr><td></td><td>Total Realisable/Expected</td><td>':FMT(TOT.REALIZABLE,'L2,'):'</td></tr>'
+	HDR:='<tr><td></td><td>Total Realised/Collected</td><td>':FMT(TOT.REALIZED,'L2,'):'</td></tr>'
+	HDR:='<tr><td></td><td>Recovery Rate</td><td>':FMT((TOT.REALIZED/TOT.REALIZABLE)*100,'L2,'):'</td></tr>'
+	HDR:='<tr><td></td><td>Current Realisable/Expected</td><td>':FMT(TOT.REALIZABLE,'L2,'):'</td></tr>'
+	HDR:='<tr><td></td><td>Current Realised/Collected</td><td>':FMT(TOT.REALIZED,'L2,'):'</td></tr>'
 	HDR:='</body></table></html>'
 	
 	WRITESEQ HDR TO F.PATH ELSE
@@ -365,6 +367,14 @@ OUTS.BAL:
                 FIND 'SERVICECHARGE' IN DUE.PROPS,Q SETTING LL.POS THEN
                     CHG.AMT+=ABS(DUE.PROP.AMTS<LL.POS>)
                 END
+				IF DUE.DATES<Q> >= FIRST.DATE AND DUE.DATES<Q> <=LAST.DATE THEN
+				    FIND 'SERVICECHARGE' IN DUE.PROPS<Q> SETTING YY.POS THEN
+                        RCHG.AMT+=ABS(DUE.PROP.AMTS<YY.POS>)
+                    END
+				    FIND 'ACCOUNT' IN DUE.PROPS<Q> SETTING XX.POS THEN
+                        RPR.AMT+=ABS(DUE.PROP.AMTS<XX.POS>)
+                    END
+				END
             NEXT Q
             CALL AA.GET.ECB.BALANCE.AMOUNT(AC.ID,'TOTALOVERDUEPR',TODAY,DUEPR,ERR.1)
             CALL AA.GET.ECB.BALANCE.AMOUNT(AC.ID,'TOTALOVERDUECH',TODAY,DUECH,ERR.2)
@@ -381,9 +391,56 @@ OUTS.BAL:
                 TOTBAL.DEF=TOTDUE + ABS(CURPR) + ABS(CHG.AMT) + ABS(DUECURPR) + ABS(DUECURCH)
             END
             TOTOUTS.BAL=TOTDUE + ABS(CURPR) + ABS(CHG.AMT)+ ABS(DUECURPR) + ABS(DUECURCH)
-            *PROUTS.BAL=ABS(CURPR) + ABS(DUEPR) + ABS(DUECURPR)
-            *CHOUTS.BAL=ABS(DUECH) + ABS(CHG.AMT)+ ABS(DUECURCH)
             CURPR='' ; DUEPR='' ; CHG.AMT='' ; DUECH='' ; ERR.1='' ; ERR.2='' ; ERR.3='' ; ERR.4='' ; ERR.5=''
             DUECURCH='' ; DUECURPR=''
+RETURN
+
+REPAYMENT:
+    CALL AA.GET.ACTIVITY.BALANCES(R.AC<AC.ARRANGEMENT.ID>,R.BALANCES,ERR)
+    AA.ACTS=R.BALANCES<AA.ACT.BAL.ACTIVITY>
+    AA.CNT=DCOUNT(AA.ACTS,VM)
+
+    FOR U=1 TO AA.CNT
+
+        FIND 'LENDING-SETTLE-PR.REPAYMENT' IN AA.ACTS,U SETTING F.VAL,M.VAL,S.VAL THEN
+
+            PREV.DATE=R.BALANCES<AA.ACT.BAL.ACTIVITY.DATE,M.VAL>
+            PROPS=R.BALANCES<AA.ACT.BAL.PROPERTY,M.VAL>
+            PROPS.AMT=R.BALANCES<AA.ACT.BAL.PROPERTY.AMT,M.VAL>
+            CONVERT SM TO '*' IN PROPS
+            CONVERT SM TO '*' IN PROPS.AMT
+            PROP.PR=FIELD(FIELD(PROPS,'*',1),'.',1)
+            PROP.CH=FIELD(FIELD(PROPS,'*',2),'.',1)
+            IF PREV.DATE >=FIRST.DATE AND PREV.DATE <=LAST.DATE THEN
+                IF PROP.PR='ACCOUNT' THEN
+                    RPREVPR.BAL+=ABS(FIELD(PROPS.AMT,'*',1))
+                END
+                IF PROP.CH='SERVICECHARGE' THEN
+                    RPREVCH.BAL+=ABS(FIELD(PROPS.AMT,'*',2))
+                END
+            END
+        END
+
+        PROPS.AMT='' ; PREV.DATE='' ; PROPS='' ; F.VAL='' ; M.VAL='' ; S.VAL='' ; PROP.PR='' ; PROP.CH=''
+        FIND 'LENDING-APPLYPAYMENT-PR.REPAYMENT' IN AA.ACTS,U SETTING F.VAL,M.VAL,S.VAL THEN
+
+            PREV.DATE=R.BALANCES<AA.ACT.BAL.ACTIVITY.DATE,M.VAL>
+            PROPS=R.BALANCES<AA.ACT.BAL.PROPERTY,M.VAL>
+            PROPS.AMT=R.BALANCES<AA.ACT.BAL.PROPERTY.AMT,M.VAL>
+            CONVERT SM TO '*' IN PROPS
+            CONVERT SM TO '*' IN PROPS.AMT
+            PROP.PR=FIELD(FIELD(PROPS,'*',1),'.',1)
+            PROP.CH=FIELD(FIELD(PROPS,'*',2),'.',1)
+            IF PREV.DATE >=FIRST.DATE AND PREV.DATE <=LAST.DATE THEN
+                IF PROP.PR='ACCOUNT' THEN
+                    RPREVPR.BAL+=ABS(FIELD(PROPS.AMT,'*',1))
+                END
+                IF PROP.CH='SERVICECHARGE' THEN
+                    RPREVCH.BAL+=ABS(FIELD(PROPS.AMT,'*',2))
+                END
+            END
+        END
+        PROPS.AMT='' ; PREV.DATE='' ; PROPS='' ; F.VAL='' ; M.VAL='' ; S.VAL='' ; PROP.PR='' ; PROP.CH=''
+    NEXT U
 RETURN
 END
