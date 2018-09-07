@@ -1,0 +1,415 @@
+SUBROUTINE JSL.MCB.MIS.AT.GLANCE(AC.ID)
+$INSERT I_COMMON
+$INSERT I_EQUATE
+$INSERT I_F.ACCOUNT
+$INSERT I_F.JSL.MCB.REPORT.PARAM
+$INSERT I_F.EB.CONTRACT.BALANCES
+$INSERT I_F.ACCT.ACTIVITY
+$INSERT I_F.AA.ACTIVITY.BALANCES
+$INSERT I_JSL.MCB.MIS.AT.GLANCE
+
+ 
+	   READ R.AC FROM F.AC,AC.ID ELSE NULL
+	   READV WBAL FROM F.ECB,AC.ID,ECB.WORKING.BALANCE ELSE NULL
+	   CATEG=R.AC<AC.CATEGORY>
+	   IF CATEG>='6000' AND CATEG<='6999' THEN
+	   BEGIN CASE
+	         CASE CATEG EQ '6110'
+			      SMALL.CNT+=1
+				  GOSUB COLLECTION
+			 CASE CATEG EQ '6111'
+			      ASSET.CNT+=1
+				  GOSUB COLLECTION
+			 CASE CATEG EQ '6113'
+			      INDIV.CNT+=1
+				  GOSUB COLLECTION
+			 CASE CATEG EQ '6115'
+			      SPRING.CNT+=1
+				  GOSUB COLLECTION
+			 CASE CATEG EQ '6116'
+			      IFDC.CNT+=1
+				  GOSUB COLLECTION
+	   END CASE
+	   END ELSE
+	   BEGIN CASE
+	        CASE CATEG EQ '3110'
+			     SMALLLN.CNT+=1
+				 GOSUB LOAN.DISB
+				 SMALLPR+=PR.AMT
+				 SMALLCH+=CH.AMT
+				 GOSUB OUTS.BAL	
+				 SMALLLN.OVD+=OVD
+				 SMALLLN.DEFBAL+=TOTBAL.DEF
+				 SMALLLN.OUTS+=TOTOUTS.BAL
+				 SMALLLN.DEFAMT+=TOTDUE
+			CASE CATEG EQ '3111'
+			     ASSETLN.CNT+=1
+				 GOSUB LOAN.DISB
+				 ASSETPR+=PR.AMT
+				 ASSETCH+=CH.AMT
+				 GOSUB OUTS.BAL	
+				 ASSETLN.OVD+=OVD
+				 ASSETLN.DEFBAL+=TOTBAL.DEF
+				 ASSETLN.OUTS+=TOTOUTS.BAL
+				 ASSETLN.DEFAMT+=TOTDUE
+			CASE CATEG EQ '3112'
+			     FESTLN.CNT+=1
+				 GOSUB LOAN.DISB
+				 FESTPR+=PR.AMT
+				 FESTCH+=CH.AMT
+				 GOSUB OUTS.BAL	
+				 FESTLN.OVD+=OVD
+				 FESTLN.DEFBAL+=TOTBAL.DEF
+				 FESTLN.OUTS+=TOTOUTS.BAL
+				 FESTLN.DEFAMT+=TOTDUE
+			CASE CATEG EQ '3113'
+			     INDIVLN.CNT+=1
+				 GOSUB LOAN.DISB
+				 INDIVPR+=PR.AMT
+				 INDIVCH+=CH.AMT
+				 GOSUB OUTS.BAL	
+				 INDIVLN.OVD+=OVD
+				 INDIVLN.DEFBAL+=TOTBAL.DEF
+				 INDIVLN.OUTS+=TOTOUTS.BAL
+				 INDIVLN.DEFAMT+=TOTDUE
+			CASE CATEG EQ '3114'
+			     INDIVHQLN.CNT+=1
+				 GOSUB LOAN.DISB
+				 INDIVHQPR+=PR.AMT
+				 INDIVHQCH+=CH.AMT
+				 GOSUB OUTS.BAL	
+				 INDIVHQLN.OVD+=OVD
+				 INDIVHQLN.DEFBAL+=TOTBAL.DEF
+				 INDIVHQLN.OUTS+=TOTOUTS.BAL
+				 INDIVHQLN.DEFAMT+=TOTDUE
+			CASE CATEG EQ '3115'
+			     SPRINGLN.CNT+=1
+				 GOSUB LOAN.DISB
+				 SPRINGPR+=PR.AMT
+				 SPRINGCH+=CH.AMT
+				 GOSUB OUTS.BAL	
+				 SPRINGLN.OVD+=OVD
+				 SPRINGLN.DEFBAL+=TOTBAL.DEF
+				 SPRINGLN.OUTS+=TOTOUTS.BAL
+				 SPRINGLN.DEFAMT+=TOTDUE
+			CASE CATEG EQ '3116'
+			     IFDCLN.CNT+=1
+				 GOSUB LOAN.DISB
+				 IFDCPR+=PR.AMT
+				 IFDCCH+=CH.AMT
+				 GOSUB OUTS.BAL	
+				 IFDCLN.OVD+=OVD
+				 IFDCLN.DEFBAL+=TOTBAL.DEF
+				 IFDCLN.OUTS+=TOTOUTS.BAL
+				 IFDCLN.DEFAMT+=TOTDUE
+			CASE CATEG EQ '3117'
+			     OGASLN.CNT+=1
+				 GOSUB LOAN.DISB
+				 OGASPR+=PR.AMT
+				 OGASCH+=CH.AMT
+				 GOSUB OUTS.BAL	
+				 OGASLN.OVD+=OVD
+				 OGASLN.DEFBAL+=TOTBAL.DEF
+				 OGASLN.OUTS+=TOTOUTS.BAL
+				 OGASLN.DEFAMT+=TOTDUE
+			CASE CATEG EQ '3118'
+			     SMELN.CNT+=1
+				 GOSUB LOAN.DISB
+				 SMEPR+=PR.AMT
+				 SMECH+=CH.AMT
+				 GOSUB OUTS.BAL	
+				 SMELN.OVD+=OVD
+				 SMELN.DEFBAL+=TOTBAL.DEF
+				 SMELN.OUTS+=TOTOUTS.BAL
+				 SMELN.DEFAMT+=TOTDUE
+			CASE CATEG EQ '3120' OR CATEG EQ '3121' OR CATEG EQ '3122'
+			     STAFFLN.CNT+=1 ;*Number of loans for this product
+				 GOSUB LOAN.DISB
+				 STAFFPR+=PR.AMT ;* Disbursed PR amount in the reporting period
+				 STAFFCH+=CH.AMT ;* Disbursed CH amount in the reporting period
+				 GOSUB OUTS.BAL	
+				 STAFFLN.OVD+=OVD ;*Number of contract in arrears
+				 STAFFLN.DEFBAL+=TOTBAL.DEF ;* Balance of defaulter
+				 STAFFLN.OUTS+=TOTOUTS.BAL ;* Total outs bal
+				 STAFFLN.DEFAMT+=TOTDUE ;* Total Due for this product (PR+CH) as @ reporting time
+	   END CASE
+	   END
+	   TOTDUE='' ; TOTOUTS.BAL='' ; OVD='' ; CH.AMT='' ; PR.AMT='' ; TOTBAL.DEF=''
+       LOCATE AC.ID IN AC.LIST<1> SETTING J.POS THEN
+	     DEL AC.LIST<J.POS>
+	   END
+	   CNT=DCOUNT(AC.LIST,FM)
+	   PRINT CNT
+	   IF CNT=0 THEN
+	   OPENSEQ 'REPORT.IN','MIS.AT.GLANCE.REPORT.MT.html' TO F.PATH ELSE
+        CREATE F.PATH ELSE
+            CRT 'CANNOT CREATE PATH'
+        END
+    END
+	TOT.SAVER=SPRING.CNT+ASSET.CNT+SPRING.CNT+IFDC.CNT+INDIV.CNT+SMALL.CNT
+	TOT.LOANCNT=SMALLLN.CNT+ASSETLN.CNT+FESTLN.CNT+INDIVLN.CNT+INDIVHQLN.CNT+SPRINGLN.CNT+IFDCLN.CNT+SMELN.CNT+STAFFLN.CNT+OGASLN.CNT
+	TOT.PR=SMALLPR+ASSETPR+FESTPR+INDIVPR+INDIVHQPR+SPRINGPR+IFDCPR+SMEPR+STAFFPR+OGASPR
+	TOT.CH=SMALLCH+ASSETCH+FESTCH+INDIVCH+INDIVHQCH+SPRINGCH+IFDCCH+SMECH+STAFFCH+OGASCH
+	TOT.OUTS=SMALLLN.OUTS+ASSETLN.OUTS+FESTLN.OUTS+INDIVLN.OUTS+INDIVHQLN.OUTS+SPRINGLN.OUTS+IFDCLN.OUTS+OGASLN.OUTS+SMELN.OUTS+STAFFLN.OUTS
+	TOT.DEF=SMALLLN.DEFAMT+ASSETLN.DEFAMT+FESTLN.DEFAMT+INDIVLN.DEFAMT+INDIVHQLN.DEFAMT+SPRINGLN.DEFAMT+IFDCLN.DEFAMT+SMELN.DEFAMT+STAFFLN.DEFAMT+OGASLN.DEFAMT
+	TOT.DEFBAL=SMALLLN.DEFBAL+ASSETLN.DEFBAL+FESTLN.DEFBAL+INDIVLN.DEFBAL+INDIVHQLN.DEFBAL+SPRINGLN.DEFBAL+IFDCLN.DEFBAL+SMELN.DEFBAL+STAFFLN.DEFBAL+OGASLN.DEFBAL
+	TOT.DEFCNT=SMALLLN.OVD+FESTLN.OVD+INDIVLN.OVD+IFDCLN.OVD+SPRINGLN.OVD+ASSETLN.OVD+SMELN.OVD+STAFFLN.OVD+INDIVHQLN.OVD+OGASLN.OVD
+	TOT.REALIZABLE=RCHG.AMT+RPR.AMT
+	TOT.REALIZED=RPREVPR.BAL+RPREVCH.BAL
+      EXECUTE 'COUNT ':FN.CO
+      CO.TOT = @SYSTEM.RETURN.CODE
+    HDR='<html>'
+    HDR:='<head></head>'
+    HDR:='<body>'
+	HDR:='<h1>GROOMING CENTRE - Microfinance Services</h1>'
+	HDR:='<h2>(Empowering People for Better Living)</h2>'
+    *HDR:='<h1>MIS AT A GLANCE Report As At ':FMT(ICONV(TODAY,"D"),"D4"):'</h1>'
+	HDR:='<h1>MIS AT A GLANCE ':FMT(ICONV(TODAY,"D"),"DMA"):",":FMT(ICONV(TODAY,"D"),"DY2"):'</h1>'
+    HDR:='<table border="1">'
+	HDR:='<tr><td>#</td><td>Description</td><td></td></tr>'
+	HDR:='<tr><td>1</td><td>Number of branch</td><td>':FMT(CO.TOT,'L,'):'</td></tr>'
+	HDR:='<tr><td>2</td><td>Number of new member admission during ':FMT(ICONV(TODAY,"D"),"DMA"):"'":FMT(ICONV(TODAY,"D"),"DY2"):'</td></tr>'
+	HDR:='<tr><td></td><td>No of Savers</td><td></td></tr>'
+	HDR:='<tr><td></td><td>No of Savers (Small)</td><td>':FMT(SMALL.CNT,'L,'):'</td></tr>'
+	HDR:='<tr><td>4</td><td>No of Savers (Individual)</td><td>':FMT(INDIV.CNT,'L,'):'</td></tr>'
+	HDR:='<tr><td>5</td><td>No of Savers (IFDC)</td><td>':FMT(IFDC.CNT,'L,'):'</td></tr>'
+	HDR:='<tr><td>6</td><td>No of Savers (Spring)</td><td>':FMT(SPRING.CNT,'L,'):'</td></tr>'
+	HDR:='<tr><td>7</td><td>No of Savers (Asset)</td><td>':FMT(ASSET.CNT,'L,'):'</td></tr>'
+	HDR:='<tr><td></td><td>Total No of savers</td><td>':FMT(TOT.SAVER,'L,'):'</td></tr>'
+	HDR:='<tr><td>8</td><td>Savings deposit during ':FMT(ICONV(TODAY,"D"),"DMA"):"'":FMT(ICONV(TODAY,"D"),"DY2"):' Small, Fest., Ind., IFDC, Spring & Asset</td><td>':FMT(CR.AMT,'L2,'):'</td></tr>'
+	HDR:='<tr><td>9</td><td>Savings balance Small, Fest., Individual, IFDC, Spring & Asset</td><td>':FMT(AC.BAL,'L2,'):'</td></tr>'
+	HDR:='<tr><td>10</td><td>Average Savings Balance</td><td>':FMT(AC.BAL/TOT.SAVER,'L2,'):'</td></tr>'
+	HDR:='<tr><td></td><td>Disbursement during ':FMT(ICONV(TODAY,"D"),"DMA"):"'":FMT(ICONV(TODAY,"D"),"DY2"):'</td><td></td></tr>'
+	HDR:='<tr><td>11</td><td>Number of loan Disbursed during ':FMT(ICONV(TODAY,"D"),"DMA"):"'":FMT(ICONV(TODAY,"D"),"DY2"):'</td><td>':TOT.LOANCNT:'</td></tr>'
+	HDR:='<tr><td>12</td><td>Principal Amount (Small Loan)</td><td>':FMT(SMALLPR,'L2,'):'</td></tr>'
+	HDR:='<tr><td>13</td><td>Principal Amount (Festival)</td><td>':FMT(FESTPR,'L2,'):'</td></tr>'
+	HDR:='<tr><td>14</td><td>Principal Amount (IFDC)</td><td>':FMT(IFDCPR,'L2,'):'</td></tr>'
+	HDR:='<tr><td>15</td><td>Principal Amount (Spring)</td><td>':FMT(SPRINGPR,'L2,'):'</td></tr>'
+	HDR:='<tr><td>16</td><td>Principal Amount (Asset)</td><td>':FMT(ASSETPR,'L2,'):'</td></tr>'
+	HDR:='<tr><td>17</td><td>Principal Amount (Individual)</td><td>':FMT(INDIVPR,'L2,'):'</td></tr>'
+	HDR:='<tr><td>18</td><td>Principal Amount (SME)</td><td>':FMT(SMEPR,'L2,'):'</td></tr>'
+	HDR:='<tr><td>19</td><td>Principal Amount (Individual MFI)</td><td>':FMT(INDIVHQPR,'L2,'):'</td></tr>'
+	HDR:='<tr><td>20</td><td>Principal Amount (Staff)</td><td>':FMT(STAFFPR,'L2,'):'</td></tr>'
+	HDR:='<tr><td>29</td><td>Principal Amount (O-Gas)</td><td>':FMT(OGASPR,'L2,'):'</td></tr>'
+	HDR:='<tr><td></td><td>Total Principal Amount</td><td>':FMT(TOT.PR,'L2,'):'</td></tr>'
+	HDR:='<tr><td>30</td><td>Service Charge (Small Loan)</td><td>':FMT(SMALLCH,'L2,'):'</td></tr>'
+	HDR:='<tr><td>31</td><td>Service Charge (Festival)</td><td>':FMT(FESTCH,'L2,'):'</td></tr>'
+	HDR:='<tr><td>32</td><td>Service Charge (IFDC)</td><td>':FMT(IFDCCH,'L2,'):'</td></tr>'
+	HDR:='<tr><td>33</td><td>Service Charge (Spring)</td><td>':FMT(SPRINGCH,'L2,'):'</td></tr>'
+	HDR:='<tr><td>34</td><td>Service Charge (Asset)</td><td>':FMT(ASSETCH,'L2,'):'</td></tr>'
+	HDR:='<tr><td>35</td><td>Service Charge (Individual)</td><td>':FMT(INDIVCH,'L2,'):'</td></tr>'
+	HDR:='<tr><td>36</td><td>Service Charge (SME)</td><td>':FMT(SMECH,'L2,'):'</td></tr>'
+	HDR:='<tr><td>37</td><td>Service Charge (Individual MFI)</td><td>':FMT(INDIVHQCH,'L2,'):'</td></tr>'
+	HDR:='<tr><td>38</td><td>Service Charge (Staff)</td><td>':FMT(STAFFCH,'L2,'):'</td></tr>'
+	HDR:='<tr><td>39</td><td>Service Charge (O-Gas)</td><td>':FMT(OGASCH,'L2,'):'</td></tr>'
+	HDR:='<tr><td></td><td>Total Service Charge Amount </td><td>':FMT(TOT.CH,'L2,'):'</td></tr>'
+	HDR:='<tr><td></td><td>Total Disbursement for ':FMT(ICONV(TODAY,"D"),"DMA"):"'":FMT(ICONV(TODAY,"D"),"DY2"):'</td><td>':FMT(TOT.PR+TOT.CH,'L2,'):'</td></tr>'
+	HDR:='<tr><td></td><td>Loan Outstanding balance</td><td></td></tr>'
+	HDR:='<tr><td>40</td><td>Active clients (Small,Festival,Individual,IFDC,Spring,Asset & Staff)</td><td>':FMT(REST.LN+TOT.LOANCNT,'L,'):'</td></tr>'
+	HDR:='<tr><td>41</td><td>Loan balance (Small)</td><td>':FMT(SMALLLN.OUTS,'L2,'):'</td></tr>'
+	HDR:='<tr><td>42</td><td>Loan Balance (Festival)</td><td>':FMT(FESTLN.OUTS,'L2,'):'</td></tr>'
+	HDR:='<tr><td>43</td><td>Loan Balance (Individual)</td><td>':FMT(INDIVLN.OUTS,'L2,'):'</td></tr>'
+	HDR:='<tr><td>44</td><td>Loan Balance (IFDC)</td><td>':FMT(IFDCLN.OUTS,'L2,'):'</td></tr>'
+	HDR:='<tr><td>45</td><td>Loan Balance (Spring)</td><td>':FMT(SPRINGLN.OUTS,'L2,'):'</td></tr>'
+	HDR:='<tr><td>46</td><td>Loan Balance (Asset)</td><td>':FMT(ASSETLN.OUTS,'L2,'):'</td></tr>'
+	HDR:='<tr><td>47</td><td>Loan Balance (Staff)</td><td>':FMT(STAFFLN.OUTS,'L2,'):'</td></tr>'
+	HDR:='<tr><td>48</td><td>Loan Balance (EagleEye)</td><td>':EMP:'</td></tr>'
+	HDR:='<tr><td>49</td><td>Loan Balance (Owolowo)</td><td>':EMP:'</td></tr>'
+	HDR:='<tr><td>50</td><td>Loan Balance (Victory)</td><td>':EMP:'</td></tr>'
+	HDR:='<tr><td>51</td><td>Loan Balance (SME)</td><td>':FMT(SMELN.OUTS,'L2,'):'</td></tr>'
+	HDR:='<tr><td>52</td><td>Loan Balance (O-Gas)</td><td>':FMT(OGASLN.OUTS,'L2,'):'</td></tr>'
+	HDR:='<tr><td>53</td><td>Loan Balance (Individual HO)</td><td>':FMT(INDIVHQLN.OUTS,'L2,'):'</td></tr>'
+	HDR:='<tr><td></td><td>Total Loan Balance</td><td>':FMT(TOT.OUTS,'L2,'):'</td></tr>'
+	HDR:='<tr><td></td><td>Defaults</td><td></td></tr>'
+	HDR:='<tr><td>54</td><td>Number of defaulters (Small)</td><td>':FMT(SMALLLN.OVD,'L,'):'</td></tr>'
+	HDR:='<tr><td>55</td><td>Number of defaulters (Festival)</td><td>':FMT(FESTLN.OVD,'L,'):'</td></tr>'
+	HDR:='<tr><td>56</td><td>Number of defaulters (Individual)</td><td>':FMT(INDIVLN.OVD,'L2,'):'</td></tr>'
+	HDR:='<tr><td>57</td><td>Number of defaulters (IFDC)</td><td>':FMT(IFDCLN.OVD,'L,'):'</td></tr>'
+	HDR:='<tr><td>58</td><td>Number of defaulters (Spring)</td><td>':FMT(SPRINGLN.OVD,'L,'):'</td></tr>'
+	HDR:='<tr><td>59</td><td>Number of defaulters (Asset)</td><td>':FMT(ASSETLN.OVD,'L,'):'</td></tr>'
+	HDR:='<tr><td>60</td><td>Number of defaulters (SME)</td><td>':FMT(SMELN.OVD,'L,'):'</td></tr>'
+	HDR:='<tr><td>61</td><td>Number of defaulters (Staff)</td><td>':FMT(STAFFLN.OVD,'L,'):'</td></tr>'
+	HDR:='<tr><td>62</td><td>Number of defaulters (Individual HO)</td><td>':FMT(INDIVHQLN.OVD,'L,'):'</td></tr>'
+	HDR:='<tr><td>63</td><td>Number of defaulters (O-Gas)</td><td>':FMT(OGASLN.OVD,'L,'):'</td></tr>'
+	HDR:='<tr><td></td><td>Total Number of defaulters</td><td>':FMT(TOT.DEFCNT,'L,'):'</td></tr>'
+	HDR:='<tr><td>64</td><td>Default amount (Naira) Small</td><td>':FMT(SMALLLN.DEFAMT,'L2,'):'</td></tr>'
+	HDR:='<tr><td>65</td><td>Default amount (Naira) Festival</td><td>':FMT(FESTLN.DEFAMT,'L2,'):'</td></tr>'
+	HDR:='<tr><td>66</td><td>Default amount (Naira) Individual</td><td>':FMT(INDIVLN.DEFAMT,'L2,'):'</td></tr>'
+	HDR:='<tr><td>67</td><td>Default amount (Naira) IFDC</td><td>':FMT(IFDCLN.DEFAMT,'L2,'):'</td></tr>'
+	HDR:='<tr><td>68</td><td>Default amount (Naira) Spring</td><td>':FMT(SPRINGLN.DEFAMT,'L2,'):'</td></tr>'
+	HDR:='<tr><td>69</td><td>Default amount (Naira) Asset</td><td>':FMT(ASSETLN.DEFAMT,'L2,'):'</td></tr>'
+	HDR:='<tr><td>70</td><td>Default amount (Naira) SME</td><td>':FMT(SMELN.DEFAMT,'L2,'):'</td></tr>'
+	HDR:='<tr><td>71</td><td>Default amount (Naira) Staff</td><td>':FMT(STAFFLN.DEFAMT,'L2,'):'</td></tr>'
+	HDR:='<tr><td>72</td><td>Default amount (Naira) Individual HO</td><td>':FMT(INDIVHQLN.DEFAMT,'L2,'):'</td></tr>'
+	HDR:='<tr><td>73</td><td>Default amount (Naira) O-Gas</td><td>':FMT(OGASLN.DEFAMT,'L2,'):'</td></tr>'
+	HDR:='<tr><td></td><td>Total Defaults amount</td><td>':FMT(TOT.DEF,'L2,'):'</td></tr>'
+	HDR:='<tr><td>74</td><td>Balance of Defaulters (Naira) Small</td><td>':FMT(SMALLLN.DEFBAL,'L,'):'</td></tr>'
+	HDR:='<tr><td>75</td><td>Balance of Defaulters (Naira) Festival</td><td>':FMT(FESTLN.DEFBAL,'L,'):'</td></tr>'
+	HDR:='<tr><td>76</td><td>Balance of Defaulters (Naira) Individual</td><td>':FMT(INDIVLN.DEFBAL,'L2,'):'</td></tr>'
+	HDR:='<tr><td>77</td><td>Balance of Defaulters (Naira) IFDC</td><td>':FMT(IFDCLN.DEFBAL,'L,'):'</td></tr>'
+	HDR:='<tr><td>78</td><td>Balance of Defaulters (Naira) Spring</td><td>':FMT(SPRINGLN.DEFBAL,'L,'):'</td></tr>'
+	HDR:='<tr><td>79</td><td>Balance of Defaulters (Naira) Asset</td><td>':FMT(ASSETLN.DEFBAL,'L,'):'</td></tr>'
+	HDR:='<tr><td>80</td><td>Balance of Defaulters (Naira) SME</td><td>':FMT(SMELN.DEFBAL,'L,'):'</td></tr>'
+	HDR:='<tr><td>81</td><td>Balance of Defaulters (Naira) Staff</td><td>':FMT(STAFFLN.DEFBAL,'L,'):'</td></tr>'
+	HDR:='<tr><td>82</td><td>Balance of Defaulters (Naira) Individual HO</td><td>':FMT(INDIVHQLN.DEFBAL,'L,'):'</td></tr>'
+	HDR:='<tr><td>83</td><td>Balance of Defaulters (Naira) O-Gas</td><td>':FMT(OGASLN.DEFBAL,'L,'):'</td></tr>'
+	HDR:='<tr><td></td><td>Total Balance of Defaulters </td><td>':FMT(TOT.DEFBAL,'L,'):'</td></tr>'
+	HDR:='<tr><td>84</td><td>Portfolio at risk (PAR 1-30 Days)</td><td>':FMT((TOT.DEFBAL/TOT.OUTS)*100,'L2,'):'</td></tr>'
+	HDR:='<tr><td></td><td>Total Realisable/Expected</td><td>':FMT(TOT.REALIZABLE,'L2,'):'</td></tr>'
+	HDR:='<tr><td></td><td>Total Realised/Collected</td><td>':FMT(TOT.REALIZED,'L2,'):'</td></tr>'
+	HDR:='<tr><td></td><td>Recovery Rate</td><td>':FMT((TOT.REALIZED/TOT.REALIZABLE)*100,'L2,'):'</td></tr>'
+	HDR:='<tr><td></td><td>Current Realisable/Expected</td><td>':FMT(TOT.REALIZABLE,'L2,'):'</td></tr>'
+	HDR:='<tr><td></td><td>Current Realised/Collected</td><td>':FMT(TOT.REALIZED,'L2,'):'</td></tr>'
+	HDR:='</body></table></html>'
+	
+	WRITESEQ HDR TO F.PATH ELSE
+        CRT 'CANNOT WRITE'
+    END
+    HDR=''
+	END
+RETURN
+
+COLLECTION:
+    ACCT.DATES='' 
+    CALL GET.ACTIVITY.DATES(AC.ID, ACCT.DATES)
+    DTE.CNT=DCOUNT(ACCT.DATES,FM)
+    FOR L=1 TO DTE.CNT
+        DATE.REC=ACCT.DATES<L>
+        BALANCE.TYPE='TRADE' ; ACTIVITY.REC='' ; ACCT.REC=''
+        CALL EB.GET.ACCT.ACTIVITY(AC.ID, ACCT.REC, DATE.REC, BALANCE.TYPE, SYSTEM.DATE, ACTIVITY.REC)
+        DAY.CNT=DCOUNT(ACTIVITY.REC<IC.ACT.DAY.NO>,VM)
+        FOR G=1 TO DAY.CNT
+            FULL.DATE=DATE.REC: ACTIVITY.REC<1,G>
+            IF FULL.DATE >=FIRST.DATE AND FULL.DATE<=LAST.DATE THEN
+                TXN.CODES=ACTIVITY.REC<IC.ACT.TRANSACT.CODE>
+                F.VAL='' ; V.VAL='' ; S.VAL=''
+                FIND '258' IN TXN.CODES,G SETTING F.VAL,V.VAL,S.VAL THEN
+                    CR.AMT+=ACTIVITY.REC<IC.ACT.TRANSACT.AMT,V.VAL>
+                END
+                F.VAL='' ; V.VAL='' ; S.VAL=''
+            END
+
+        NEXT G
+    NEXT L
+    AC.BAL+=WBAL
+    WBAL=''
+    RETURN
+LOAN.DISB:
+        IF R.AC<AC.OPENING.DATE> >= FIRST.DATE AND R.AC<AC.OPENING.DATE> <= LAST.DATE THEN	
+            		
+		    SIM.REF='' ; TOT.PAYMENT='' ; DUE.DATES='' ; DUE.TYPES='' ; DUE.METHODS='' ; DUE.TYPE.AMTS='' ; DUE.PROPS='' DUE.PROP.AMTS='' ; DUE.OUTS='' ; PROPS.CNT='' ; PR.AMT='' ; CH.AMT=''
+			LL.POS='' ; KK.POS='' ; YY.POS='' ; XX.POS='' ; FF=''
+            CALL AA.SCHEDULE.PROJECTOR(R.AC<AC.ARRANGEMENT.ID>, SIM.REF, "","", TOT.PAYMENT, DUE.DATES, DUE.TYPES, DUE.METHODS, DUE.TYPE.AMTS, DUE.PROPS, DUE.PROP.AMTS, DUE.OUTS)          ;* Routine to Project complete schedules
+                       
+            CONVERT SM TO FM IN DUE.PROPS
+            CONVERT VM TO FM IN DUE.PROPS
+            CONVERT SM TO FM IN DUE.PROP.AMTS
+            CONVERT VM TO FM IN DUE.PROP.AMTS
+			PROPS.CNT=DCOUNT(DUE.PROPS,FM)
+            FOR FF=1 TO PROPS.CNT
+                FIND 'SERVICECHARGE' IN DUE.PROPS,FF SETTING LL.POS THEN
+                    CH.AMT+=ABS(DUE.PROP.AMTS<LL.POS>)
+                END
+                FIND 'ACCOUNT' IN DUE.PROPS,FF SETTING KK.POS THEN
+                    PR.AMT+=ABS(DUE.PROP.AMTS<KK.POS>)
+                END
+            NEXT FF		
+            GOSUB OUTS.BAL		
+		END ELSE
+		    REST.LN+=1 ;* rest of the loans
+		END
+RETURN
+OUTS.BAL:
+            SIMS.REF='' ; TOTS.PAYMENT='' ; DUES.DATES='' ; DUES.TYPES='' ; DUES.METHODS='' ; DUES.TYPE.AMTS='' ; DUES.PROPS='' DUES.PROP.AMTS='' ; DUES.OUTS='' ; PROP.CNT='' ; PR.AMT='' ; CH.AMT=''
+			OVD='' ; TOTDUE='' ; TOTOUTS.BAL='' ; OVD='' ; TOTBAL.DEF='' ; MM.POS='' ; YY.POS='' ; XX.POS='' ; Q=''
+            CALL AA.SCHEDULE.PROJECTOR(R.AC<AC.ARRANGEMENT.ID>, SIMS.REF, "",CYCLE.DATE, TOTS.PAYMENT, DUES.DATES, DUES.TYPES, DUE.METHODS, DUES.TYPE.AMTS, DUES.PROPS, DUES.PROP.AMTS, DUES.OUTS)          ;* Routine to Project complete schedules
+                       
+            CONVERT SM TO FM IN DUES.PROPS
+            CONVERT VM TO FM IN DUES.PROPS
+            CONVERT SM TO FM IN DUES.PROP.AMTS
+            CONVERT VM TO FM IN DUES.PROP.AMTS
+			PROP.CNT=DCOUNT(DUES.PROPS,FM)
+            FOR Q=1 TO PROP.CNT
+                FIND 'SERVICECHARGE' IN DUES.PROPS,Q SETTING MM.POS THEN
+                    CHG.AMT+=ABS(DUES.PROP.AMTS<MM.POS>)
+                END
+				IF DUES.DATES<Q> >= FIRST.DATE AND DUES.DATES<Q> <=LAST.DATE THEN
+				    FIND 'SERVICECHARGE' IN DUES.PROPS<Q> SETTING YY.POS THEN
+                        RCHG.AMT+=ABS(DUES.PROP.AMTS<YY.POS>)
+                    END
+				    FIND 'ACCOUNT' IN DUES.PROPS<Q> SETTING XX.POS THEN
+                        RPR.AMT+=ABS(DUES.PROP.AMTS<XX.POS>)
+                    END
+				END
+            NEXT Q
+            CALL AA.GET.ECB.BALANCE.AMOUNT(AC.ID,'TOTALOVERDUEPR',TODAY,DUEPR,ERR.1)
+            CALL AA.GET.ECB.BALANCE.AMOUNT(AC.ID,'TOTALOVERDUECH',TODAY,DUECH,ERR.2)
+            CALL AA.GET.ECB.BALANCE.AMOUNT(AC.ID,'CURACCOUNT',TODAY,CURPR,ERR.3)
+            CALL AA.GET.ECB.BALANCE.AMOUNT(AC.ID,'DUEACCOUNT',TODAY,DUECURPR,ERR.4)
+            CALL AA.GET.ECB.BALANCE.AMOUNT(AC.ID,'DUESERVICECHARGE',TODAY,DUECURCH,ERR.5)
+            TOTDUE=ABS(DUEPR)+ABS(DUECH)
+            IF TOTDUE>0 THEN
+                OVD=1
+                PRBAL.DEF=ABS(CURPR)+ ABS(DUEPR)
+                CHBAL.DEF=ABS(DUECH) + ABS(CHG.AMT)
+                PRDUE.BAL=ABS(DUEPR)
+                CHDUE.BAL=ABS(DUECH)
+                TOTBAL.DEF=TOTDUE + ABS(CURPR) + ABS(CHG.AMT) + ABS(DUECURPR) + ABS(DUECURCH)
+            END
+            TOTOUTS.BAL=TOTDUE + ABS(CURPR) + ABS(CHG.AMT)+ ABS(DUECURPR) + ABS(DUECURCH)
+            CURPR='' ; DUEPR='' ; CHG.AMT='' ; DUECH='' ; ERR.1='' ; ERR.2='' ; ERR.3='' ; ERR.4='' ; ERR.5=''
+            DUECURCH='' ; DUECURPR=''
+			GOSUB REPAYMENT
+RETURN
+
+REPAYMENT:
+    R.BALANCES='' ; U='' ; AA.CNT='' ; AA.ACTS='' ; ERR='' ; F.VAL='' ; M.VAL='' ; S.VAL=''
+	PROPS.AMT='' ; PREV.DATE='' ; PROPS='' ; PROP.PR='' ; PROP.CH=''
+    CALL AA.GET.ACTIVITY.BALANCES(R.AC<AC.ARRANGEMENT.ID>,R.BALANCES,ERR)
+    AA.ACTS=R.BALANCES<AA.ACT.BAL.ACTIVITY>
+    AA.CNT=DCOUNT(AA.ACTS,VM)
+
+    FOR U=1 TO AA.CNT
+
+        FIND 'LENDING-SETTLE-PR.REPAYMENT' IN AA.ACTS,U SETTING F.VAL,M.VAL,S.VAL THEN
+
+            PREV.DATE=R.BALANCES<AA.ACT.BAL.ACTIVITY.DATE,M.VAL>
+            PROPS=R.BALANCES<AA.ACT.BAL.PROPERTY,M.VAL>
+            PROPS.AMT=R.BALANCES<AA.ACT.BAL.PROPERTY.AMT,M.VAL>
+            CONVERT SM TO '*' IN PROPS
+            CONVERT SM TO '*' IN PROPS.AMT
+            PROP.PR=FIELD(FIELD(PROPS,'*',1),'.',1)
+            PROP.CH=FIELD(FIELD(PROPS,'*',2),'.',1)
+            IF PREV.DATE >=FIRST.DATE AND PREV.DATE <=LAST.DATE THEN
+                IF PROP.PR='ACCOUNT' THEN
+                    RPREVPR.BAL+=ABS(FIELD(PROPS.AMT,'*',1))
+                END
+                IF PROP.CH='SERVICECHARGE' THEN
+                    RPREVCH.BAL+=ABS(FIELD(PROPS.AMT,'*',2))
+                END
+            END
+        END
+
+        PROPS.AMT='' ; PREV.DATE='' ; PROPS='' ; F.VAL='' ; M.VAL='' ; S.VAL='' ; PROP.PR='' ; PROP.CH=''
+        FIND 'LENDING-APPLYPAYMENT-PR.REPAYMENT' IN AA.ACTS,U SETTING F.VAL,M.VAL,S.VAL THEN
+
+            PREV.DATE=R.BALANCES<AA.ACT.BAL.ACTIVITY.DATE,M.VAL>
+            PROPS=R.BALANCES<AA.ACT.BAL.PROPERTY,M.VAL>
+            PROPS.AMT=R.BALANCES<AA.ACT.BAL.PROPERTY.AMT,M.VAL>
+            CONVERT SM TO '*' IN PROPS
+            CONVERT SM TO '*' IN PROPS.AMT
+            PROP.PR=FIELD(FIELD(PROPS,'*',1),'.',1)
+            PROP.CH=FIELD(FIELD(PROPS,'*',2),'.',1)
+            IF PREV.DATE >=FIRST.DATE AND PREV.DATE <=LAST.DATE THEN
+                IF PROP.PR='ACCOUNT' THEN
+                    RPREVPR.BAL+=ABS(FIELD(PROPS.AMT,'*',1))
+                END
+                IF PROP.CH='SERVICECHARGE' THEN
+                    RPREVCH.BAL+=ABS(FIELD(PROPS.AMT,'*',2))
+                END
+            END
+        END
+        PROPS.AMT='' ; PREV.DATE='' ; PROPS='' ; F.VAL='' ; M.VAL='' ; S.VAL='' ; PROP.PR='' ; PROP.CH=''
+    NEXT U
+RETURN
+END
