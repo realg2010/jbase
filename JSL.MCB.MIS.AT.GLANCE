@@ -299,7 +299,7 @@ PROCESS:
 	HDR:='<tr><td></td><td>Recovery Rate</td><td>':FMT((TOT.REALIZED/TOT.REALIZABLE)*100,'L2,'):'</td></tr>'
 	HDR:='<tr><td></td><td>Current Realisable/Expected</td><td>':FMT(TOT.REALIZABLE,'L2,'):'</td></tr>'
 	HDR:='<tr><td></td><td>Current Realised/Collected</td><td>':FMT(TOT.REALIZED,'L2,'):'</td></tr>'
-	HDR:='</body></table></html>'
+	HDR:='</table></body></html>'
 	
 	WRITESEQ HDR TO F.PATH ELSE
         CRT 'CANNOT WRITE'
