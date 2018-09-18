@@ -336,7 +336,7 @@ LOAN.DISB:
         IF R.AC<AC.OPENING.DATE> >= FIRST.DATE AND R.AC<AC.OPENING.DATE> <= LAST.DATE THEN	
             		
 		    SIM.REF='' ; TOT.PAYMENT='' ; DUE.DATES='' ; DUE.TYPES='' ; DUE.METHODS='' ; DUE.TYPE.AMTS='' ; DUE.PROPS='' DUE.PROP.AMTS='' ; DUE.OUTS='' ; PROPS.CNT='' ; PR.AMT='' ; CH.AMT=''
-			LL.POS='' ; KK.POS='' ; YY.POS='' ; XX.POS='' ; FF=''
+			LL.POS='' ; KK.POS='' ; FF=''
             CALL AA.SCHEDULE.PROJECTOR(R.AC<AC.ARRANGEMENT.ID>, SIM.REF, "","", TOT.PAYMENT, DUE.DATES, DUE.TYPES, DUE.METHODS, DUE.TYPE.AMTS, DUE.PROPS, DUE.PROP.AMTS, DUE.OUTS)          ;* Routine to Project complete schedules
                        
             CONVERT SM TO FM IN DUE.PROPS
@@ -351,8 +351,7 @@ LOAN.DISB:
                 FIND 'ACCOUNT' IN DUE.PROPS,FF SETTING KK.POS THEN
                     PR.AMT+=ABS(DUE.PROP.AMTS<KK.POS>)
                 END
-            NEXT FF		
-            GOSUB OUTS.BAL		
+            NEXT FF			
 		END ELSE
 		    REST.LN+=1 ;* rest of the loans
 		END
@@ -414,17 +413,17 @@ REPAYMENT:
             PREV.DATE=R.BALANCES<AA.ACT.BAL.ACTIVITY.DATE,M.VAL>
             PROPS=R.BALANCES<AA.ACT.BAL.PROPERTY,M.VAL>
             PROPS.AMT=R.BALANCES<AA.ACT.BAL.PROPERTY.AMT,M.VAL>
-            CONVERT SM TO '*' IN PROPS
-            CONVERT SM TO '*' IN PROPS.AMT
-            PROP.PR=FIELD(FIELD(PROPS,'*',1),'.',1)
-            PROP.CH=FIELD(FIELD(PROPS,'*',2),'.',1)
+            CONVERT SM TO FM IN PROPS
+            CONVERT SM TO FM IN PROPS.AMT
             IF PREV.DATE >=FIRST.DATE AND PREV.DATE <=LAST.DATE THEN
-                IF PROP.PR='ACCOUNT' THEN
-                    RPREVPR.BAL+=ABS(FIELD(PROPS.AMT,'*',1))
+                FINDSTR 'ACCOUNT' IN PROPS SETTING A.VAL,B.VAL,C.VAL THEN
+                    RPREVPR.BAL+=ABS(PROPS.AMT<A.VAL>)
                 END
-                IF PROP.CH='SERVICECHARGE' THEN
-                    RPREVCH.BAL+=ABS(FIELD(PROPS.AMT,'*',2))
+                A.VAL='' ; B.VAL='' ; C.VAL=''
+                FINDSTR 'SERVICECHARGE' IN PROPS SETTING A.VAL,B.VAL,C.VAL THEN
+                    RPREVCH.BAL+=ABS(PROPS.AMT<A.VAL>)
                 END
+                A.VAL='' ; B.VAL='' ; C.VAL=''
             END
         END
 
@@ -434,17 +433,17 @@ REPAYMENT:
             PREV.DATE=R.BALANCES<AA.ACT.BAL.ACTIVITY.DATE,M.VAL>
             PROPS=R.BALANCES<AA.ACT.BAL.PROPERTY,M.VAL>
             PROPS.AMT=R.BALANCES<AA.ACT.BAL.PROPERTY.AMT,M.VAL>
-            CONVERT SM TO '*' IN PROPS
-            CONVERT SM TO '*' IN PROPS.AMT
-            PROP.PR=FIELD(FIELD(PROPS,'*',1),'.',1)
-            PROP.CH=FIELD(FIELD(PROPS,'*',2),'.',1)
+            CONVERT SM TO FM IN PROPS
+            CONVERT SM TO FM IN PROPS.AMT
             IF PREV.DATE >=FIRST.DATE AND PREV.DATE <=LAST.DATE THEN
-                IF PROP.PR='ACCOUNT' THEN
-                    RPREVPR.BAL+=ABS(FIELD(PROPS.AMT,'*',1))
+                FINDSTR 'ACCOUNT' IN PROPS SETTING A.VAL,B.VAL,C.VAL THEN
+                    RPREVPR.BAL+=ABS(PROPS.AMT<A.VAL>)
                 END
-                IF PROP.CH='SERVICECHARGE' THEN
-                    RPREVCH.BAL+=ABS(FIELD(PROPS.AMT,'*',2))
+                A.VAL='' ; B.VAL='' ; C.VAL=''
+                FINDSTR 'SERVICECHARGE' IN PROPS SETTING A.VAL,B.VAL,C.VAL THEN
+                    RPREVCH.BAL+=ABS(PROPS.AMT<A.VAL>)
                 END
+                A.VAL='' ; B.VAL='' ; C.VAL=''
             END
         END
         PROPS.AMT='' ; PREV.DATE='' ; PROPS='' ; F.VAL='' ; M.VAL='' ; S.VAL='' ; PROP.PR='' ; PROP.CH=''
